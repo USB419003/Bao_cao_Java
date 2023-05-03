@@ -2,6 +2,8 @@ package Demo;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.sql.*;
+
 import javax.swing.*;
 
 import java.util.Random;
@@ -40,6 +42,8 @@ public final class GamePanel extends JPanel implements ActionListener{
 	Timer timer1;
 	Random random;
 	
+
+	
 	public GamePanel() {
 		random = new Random();
 		this.setPreferredSize(new Dimension(WIDTH,HEIGHT));
@@ -47,6 +51,24 @@ public final class GamePanel extends JPanel implements ActionListener{
 		this.setFocusable(true);
 		this.addKeyListener(new MyKeyAdapter());
 		start();
+		try {
+			String DB_URL = "jdbc:mysql://localhost:3306/Highscore";
+			String USER = "root";
+			String PASSWORD = "Brrocoins2003";
+			Connection conn = DriverManager.getConnection(DB_URL, USER, PASSWORD);
+			String selectSql = "SELECT MAX(Score) FROM Scores";
+			java.sql.Statement statement = conn.createStatement();
+			ResultSet resultSet = statement.executeQuery(selectSql);
+			if (resultSet.next()) {
+				eaten = resultSet.getInt(1);
+				
+			}
+			conn.close();
+		} 
+		catch (SQLException e) {
+			System.err.println("Error fetching max score: " + e.getMessage());
+		
+		}
 	}
 	
 	public void newGame() {
@@ -57,7 +79,25 @@ public final class GamePanel extends JPanel implements ActionListener{
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		try {
+			String DB_URL = "jdbc:mysql://localhost:3307/quanlydiem";
+			String USER = "root";
+			String PASSWORD = "12345678m";
+			Connection conn = DriverManager.getConnection(DB_URL, USER, PASSWORD);
+			String selectSql = "SELECT MAX(score) FROM scores";
+			java.sql.Statement statement = conn.createStatement();
+			ResultSet resultSet = statement.executeQuery(selectSql);
+			if (resultSet.next()) {
+				eaten = resultSet.getInt(1);
+				
+			}
+			conn.close();
+		} 
+		catch (SQLException e) {
+			System.err.println("Error fetching max score: " + e.getMessage());
+		}
 	}
+	
 
 	public void start() {
 		Food();
@@ -117,6 +157,21 @@ public final class GamePanel extends JPanel implements ActionListener{
 			g.setFont(new Font("CALIBRE", Font.BOLD, 25));
 			FontMetrics metrics0 = getFontMetrics(g.getFont());
 			g.drawString(hours_String+":"+minutes_String+":"+seconds_String,(WIDTH-metrics0.stringWidth(hours_String+":"+minutes_String+":"+seconds_String))/2,g.getFont().getSize()*2);
+			
+			try {
+				String DB_URL = "jdbc:mysql://localhost:3307/quanlydiem";
+				String USER = "root";
+				String PASSWORD = "12345678m";
+				Connection conn = DriverManager.getConnection(DB_URL, USER, PASSWORD);
+				String insertSql = "INSERT INTO scores (player_name, score, levels) VALUES (?, ?, ?)";
+				PreparedStatement preparedStatement = conn.prepareStatement(insertSql);
+				preparedStatement.setInt(2, eaten);
+				preparedStatement.setInt(3, elapseTime);
+				preparedStatement.executeUpdate();
+				conn.close();
+			} catch (SQLException e) {
+				System.err.println("Error" + e.getMessage());
+			}
 		}
 		else {
 			GameOver(g);
@@ -168,7 +223,7 @@ public final class GamePanel extends JPanel implements ActionListener{
 			if((x[0]==x[i]) && (y[0]==y[i])){
 				RUNNING= false;
 			}
-
+			
 		}
 		//no more border-damage
 		if (x[0]<0){
@@ -225,6 +280,7 @@ public final class GamePanel extends JPanel implements ActionListener{
 		repaint();
 		Timer();
 	}
+	
 	
 	public void pause() {
 		try {
